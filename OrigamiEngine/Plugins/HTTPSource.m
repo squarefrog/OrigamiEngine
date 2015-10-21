@@ -188,6 +188,23 @@ const NSTimeInterval readTimeout = 1.0;
         }
     }
 
+    // Prevent OrigamiEngine taking up too much space
+    NSArray *cacheFiles = [[NSFileManager defaultManager]
+                           contentsOfDirectoryAtPath:dataPath
+                           error:NULL];
+
+    for (NSString *f in cacheFiles) {
+        NSString *fp = [dataPath stringByAppendingPathComponent:f];
+        if ([fp isEqualToString:filePath]) {
+            continue;
+        }
+
+        NSError *error = nil;
+        if (![[NSFileManager defaultManager] removeItemAtPath:fp error:&error]) {
+            NSLog(@"%s: Error removing file: %@", __PRETTY_FUNCTION__, [error localizedDescription]);
+        }
+    }
+
     self.fileHandle = [NSFileHandle fileHandleForUpdatingAtPath:filePath];
 }
 
