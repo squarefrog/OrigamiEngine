@@ -83,6 +83,7 @@
                                                     code:ORGMEngineErrorCodesSourceFailed
                                                 userInfo:@{ NSLocalizedDescriptionKey:
                                                             NSLocalizedString(@"Couldn't open source", nil) }];
+            self.input = nil;
             return;
         }
         [_input addObserver:self forKeyPath:@"endOfInput"
