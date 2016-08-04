@@ -105,6 +105,10 @@
                                                     code:ORGMEngineErrorCodesConverterFailed
                                                 userInfo:@{ NSLocalizedDescriptionKey:
                                                             NSLocalizedString(@"Couldn't setup converter", nil) }];
+            [self.input removeObserver:self forKeyPath:@"endOfInput"];
+            self.output = nil;
+            self.input = nil;
+            self.converter = nil;
             return;
         }
 
