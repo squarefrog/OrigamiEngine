@@ -128,7 +128,7 @@
         return result;
     }
 
-	NSString *extension = [[[source url] path] pathExtension];
+	NSString *extension = @"flac";
 	Class decoder = [_decoders objectForKey:[extension lowercaseString]];
 	if (!decoder) {
         if (error) {
