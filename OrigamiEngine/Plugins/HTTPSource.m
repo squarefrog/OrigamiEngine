@@ -147,7 +147,14 @@ const NSTimeInterval readTimeout = 1.0;
 }
 
 - (void)close {
+    [self signalSemaphore];
     [_urlConnection cancel];
+}
+
+- (void)signalSemaphore {
+    if (_downloadingSemaphore) {
+        dispatch_semaphore_signal(_downloadingSemaphore);
+    }
 }
 
 #pragma mark - private
@@ -213,7 +220,8 @@ const NSTimeInterval readTimeout = 1.0;
 
 - (void)connection:(NSURLConnection *)connection didReceiveResponse:(NSURLResponse *)response {
     _bytesExpected = response.expectedContentLength;
-    dispatch_semaphore_signal(_downloadingSemaphore);
+
+    [self signalSemaphore];
 
     if ([_fileHandle seekToEndOfFile] == _bytesExpected) {
         [_urlConnection cancel];
@@ -223,7 +231,7 @@ const NSTimeInterval readTimeout = 1.0;
 
 - (void)connection:(NSURLConnection *)connection didReceiveData:(NSData *)data {
     if(_byteCount >= _bytesWaitingFromCache) {
-        dispatch_semaphore_signal(_downloadingSemaphore);
+        [self signalSemaphore];
     }
 
     if (data && _fileHandle) {
@@ -238,7 +246,7 @@ const NSTimeInterval readTimeout = 1.0;
 }
 
 - (void)connection:(NSURLConnection *)connection didFailWithError:(NSError *)error {
-    dispatch_semaphore_signal(_downloadingSemaphore);
+    [self signalSemaphore];
     _connectionDidFail = YES;
 }
 
