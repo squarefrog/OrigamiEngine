@@ -34,6 +34,7 @@
 @property (retain, nonatomic) ORGMConverter *converter;
 @property (assign, nonatomic) ORGMEngineState currentState;
 @property (retain, nonatomic) NSError *currentError;
+@property (assign, nonatomic) ORGMInputUnit *observedInput;
 @end
 
 @implementation ORGMEngine
@@ -52,11 +53,18 @@
 }
 
 - (void)dealloc {
+    [self removeInputObserver:_observedInput];
     [self removeObserver:self forKeyPath:@"currentState"];
     [_input release];
     [_output release];
     [_converter release];
     [super dealloc];
+}
+
+- (void)removeInputObserver:(ORGMInputUnit *)input {
+    if (!input) return;
+    [input removeObserver:self forKeyPath:@"endOfInput"];
+    self.observedInput = nil;
 }
 
 #pragma mark - public
@@ -89,6 +97,7 @@
         [_input addObserver:self forKeyPath:@"endOfInput"
                     options:NSKeyValueObservingOptionNew
                     context:nil];
+        self.observedInput = _input;
 
         ORGMConverter *converter = [[ORGMConverter alloc] initWithInputUnit:_input];
         self.converter = converter;
@@ -106,6 +115,7 @@
                                                 userInfo:@{ NSLocalizedDescriptionKey:
                                                             NSLocalizedString(@"Couldn't setup converter", nil) }];
             [self.input removeObserver:self forKeyPath:@"endOfInput"];
+            self.observedInput = nil;
             self.output = nil;
             self.input = nil;
             self.converter = nil;
@@ -141,6 +151,7 @@
 - (void)stop {
     dispatch_async([ORGMQueues processing_queue], ^{
         [_input removeObserver:self forKeyPath:@"endOfInput"];
+        self.observedInput = nil;
         self.output = nil;
         self.input = nil;
         self.converter = nil;
